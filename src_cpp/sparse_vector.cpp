@@ -47,6 +47,35 @@ float SparseVector::inner_product(const SparseVector& other) const {
         } else {
             j++;
         }
+
+float SparseVector::l2_distance(const SparseVector& other) const {
+    float result = 0.0f;
+    int i = 0, j = 0;
+    while (i < nnz_ && j < other.nnz_) {
+        if (indices_[i] == other.indices_[j]) {
+            float diff = values_[i] - other.values_[j];
+            result += diff * diff;
+            i++;
+            j++;
+        } else if (indices_[i] < other.indices_[j]) {
+            result += values_[i] * values_[i];
+            i++;
+        } else {
+            result += other.values_[j] * other.values_[j];
+            j++;
+        }
+    }
+    while (i < nnz_) {
+        result += values_[i] * values_[i];
+        i++;
+    }
+    while (j < other.nnz_) {
+        result += other.values_[j] * other.values_[j];
+        j++;
+    }
+    return result;
+}
+
     }
     return result;
 }

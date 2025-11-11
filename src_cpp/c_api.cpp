@@ -51,4 +51,34 @@ extern "C" {
 }
 
 
+extern "C" {
+    float vector_l2_distance(Vector* a, Vector* b) {
+        if (a && b) {
+            return a->l2_distance(*b);
+        }
+        return 0.0;
+    }
+}
+
+
+extern "C" {
+    float half_vector_l2_distance(HalfVector* a, HalfVector* b) {
+        if (a && b) {
+            return a->l2_distance(*b);
+        }
+        return 0.0;
+    }
+}
+
+
+extern "C" {
+    float sparse_vector_l2_distance(SparseVector* a, SparseVector* b) {
+        if (a && b) {
+            return a->l2_distance(*b);
+        }
+        return 0.0;
+    }
+}
+
+
 

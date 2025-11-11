@@ -20,6 +20,9 @@
 extern float sparse_vector_inner_product(SparseVector* a, SparseVector* b);
 
 
+extern float sparse_vector_l2_distance(SparseVector* a, SparseVector* b);
+
+
 typedef struct SparseInputElement
 {
 	int32		index;
@@ -115,8 +118,7 @@ CheckIndex(int32 *indices, int i, int dim)
 			ereport(ERROR,
 					(errcode(ERRCODE_DATA_EXCEPTION),
 					 errmsg("sparsevec indices must not contain duplicates")));
-	}
-}
+
 
 /*
  * Ensure finite element
@@ -803,116 +805,16 @@ array_to_sparsevec(PG_FUNCTION_ARGS)
 /*
  * Get the L2 squared distance between sparse vectors
  */
-static float
-SparsevecL2SquaredDistance(SparseVector * a, SparseVector * b)
-{
-	float	   *ax = SPARSEVEC_VALUES(a);
-	float	   *bx = SPARSEVEC_VALUES(b);
-	float		distance = 0.0;
-	int			bpos = 0;
 
-	for (int i = 0; i < a->nnz; i++)
-	{
-		int			ai = a->indices[i];
-		int			bi = -1;
 
-		for (int j = bpos; j < b->nnz; j++)
-		{
-			bi = b->indices[j];
-
-			if (ai == bi)
-			{
-				float		diff = ax[i] - bx[j];
-
-				distance += diff * diff;
-			}
-			else if (ai > bi)
-				distance += bx[j] * bx[j];
-
-			/* Update start for next iteration */
-			if (ai >= bi)
-				bpos = j + 1;
-
-			/* Found or passed it */
-			if (bi >= ai)
-				break;
-		}
-
-		if (ai != bi)
-			distance += ax[i] * ax[i];
-	}
-
-	for (int j = bpos; j < b->nnz; j++)
-		distance += bx[j] * bx[j];
-
-	return distance;
-}
-
-/*
- * Get the L2 distance between sparse vectors
- */
-FUNCTION_PREFIX PG_FUNCTION_INFO_V1(sparsevec_l2_distance);
-Datum
-sparsevec_l2_distance(PG_FUNCTION_ARGS)
-{
-	SparseVector *a = PG_GETARG_SPARSEVEC_P(0);
-	SparseVector *b = PG_GETARG_SPARSEVEC_P(1);
-
-	CheckDims(a, b);
-
-	PG_RETURN_FLOAT8(sqrt((double) SparsevecL2SquaredDistance(a, b)));
-}
-
-/*
- * Get the L2 squared distance between sparse vectors
- * This saves a sqrt calculation
- */
-FUNCTION_PREFIX PG_FUNCTION_INFO_V1(sparsevec_l2_squared_distance);
-Datum
-sparsevec_l2_squared_distance(PG_FUNCTION_ARGS)
-{
-	SparseVector *a = PG_GETARG_SPARSEVEC_P(0);
-	SparseVector *b = PG_GETARG_SPARSEVEC_P(1);
-
-	CheckDims(a, b);
-
-	PG_RETURN_FLOAT8((double) SparsevecL2SquaredDistance(a, b));
-}
-
-/*
- * Get the inner product of two sparse vectors
- */
 
 
 /*
  * Get the inner product of two sparse vectors
  */
-FUNCTION_PREFIX PG_FUNCTION_INFO_V1(sparsevec_inner_product);
-Datum
-sparsevec_inner_product(PG_FUNCTION_ARGS)
-{
-	SparseVector *a = PG_GETARG_SPARSEVEC_P(0);
-	SparseVector *b = PG_GETARG_SPARSEVEC_P(1);
 
-	CheckDims(a, b);
 
-	PG_RETURN_FLOAT8((double) sparse_vector_inner_product(a, b));
-}
 
-/*
- * Get the negative inner product of two sparse vectors
- */
-FUNCTION_PREFIX PG_FUNCTION_INFO_V1(sparsevec_negative_inner_product);
-Datum
-sparsevec_negative_inner_product(PG_FUNCTION_ARGS)
-{
-	SparseVector *a = PG_GETARG_SPARSEVEC_P(0);
-	SparseVector *b = PG_GETARG_SPARSEVEC_P(1);
-
-	CheckDims(a, b);
-
-	PG_RETURN_FLOAT8((double) -sparse_vector_inner_product(a, b));
-}
 
 /*
  * Get the cosine distance between two sparse vectors
