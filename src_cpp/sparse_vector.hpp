@@ -19,6 +19,8 @@ public:
     float* values();
     const float* values() const;
     size_t size() const;
+    void print(const char* msg);
+    float inner_product(const SparseVector& other) const;
 };
 
 #endif // SPARSE_VECTOR_HPP

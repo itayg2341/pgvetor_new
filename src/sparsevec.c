@@ -17,6 +17,9 @@
 #include "utils/lsyscache.h"
 #include "vector.h"
 
+extern float sparse_vector_inner_product(SparseVector* a, SparseVector* b);
+
+
 typedef struct SparseInputElement
 {
 	int32		index;
@@ -879,38 +882,7 @@ sparsevec_l2_squared_distance(PG_FUNCTION_ARGS)
 /*
  * Get the inner product of two sparse vectors
  */
-static float
-SparsevecInnerProduct(SparseVector * a, SparseVector * b)
-{
-	float	   *ax = SPARSEVEC_VALUES(a);
-	float	   *bx = SPARSEVEC_VALUES(b);
-	float		distance = 0.0;
-	int			bpos = 0;
 
-	for (int i = 0; i < a->nnz; i++)
-	{
-		int			ai = a->indices[i];
-
-		for (int j = bpos; j < b->nnz; j++)
-		{
-			int			bi = b->indices[j];
-
-			/* Only update when the same index */
-			if (ai == bi)
-				distance += ax[i] * bx[j];
-
-			/* Update start for next iteration */
-			if (ai >= bi)
-				bpos = j + 1;
-
-			/* Found or passed it */
-			if (bi >= ai)
-				break;
-		}
-	}
-
-	return distance;
-}
 
 /*
  * Get the inner product of two sparse vectors
@@ -924,7 +896,7 @@ sparsevec_inner_product(PG_FUNCTION_ARGS)
 
 	CheckDims(a, b);
 
-	PG_RETURN_FLOAT8((double) SparsevecInnerProduct(a, b));
+	PG_RETURN_FLOAT8((double) sparse_vector_inner_product(a, b));
 }
 
 /*
@@ -939,7 +911,7 @@ sparsevec_negative_inner_product(PG_FUNCTION_ARGS)
 
 	CheckDims(a, b);
 
-	PG_RETURN_FLOAT8((double) -SparsevecInnerProduct(a, b));
+	PG_RETURN_FLOAT8((double) -sparse_vector_inner_product(a, b));
 }
 
 /*
@@ -959,7 +931,7 @@ sparsevec_cosine_distance(PG_FUNCTION_ARGS)
 
 	CheckDims(a, b);
 
-	similarity = SparsevecInnerProduct(a, b);
+	similarity = sparse_vector_inner_product(a, b);
 
 	/* Auto-vectorized */
 	for (int i = 0; i < a->nnz; i++)

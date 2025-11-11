@@ -36,3 +36,12 @@ int Vector::compare(const Vector& other) const {
     }
     return 0;
 }
+
+float Vector::inner_product(const Vector& other) const {
+    float result = 0.0;
+    for (int i = 0; i < dim; ++i) {
+        result += x[i] * other.x[i];
+    }
+    return result;
+}
+

@@ -16,6 +16,7 @@ public:
     static Vector* init(int dim);
     void print(const char* msg);
     int compare(const Vector& other) const;
+    float inner_product(const Vector& other) const;
 };
 
 #endif // VECTOR_HPP

@@ -15,3 +15,16 @@ HalfVector* HalfVector::init(int dim) {
     }
     return vec;
 }
+
+void HalfVector::print(const char* msg) {
+    // Implementation requires converting half to float for printing
+}
+
+float HalfVector::inner_product(const HalfVector& other) const {
+    float result = 0.0f;
+    for (int i = 0; i < dim; ++i) {
+        result += (float)x[i] * (float)other.x[i];
+    }
+    return result;
+}
+

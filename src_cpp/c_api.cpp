@@ -1,4 +1,6 @@
 #include "vector.hpp"
+#include "half_vector.hpp"
+#include "sparse_vector.hpp"
 
 extern "C" {
 
@@ -20,3 +22,33 @@ extern "C" {
     }
 
 }
+
+extern "C" {
+    float vector_inner_product(Vector* a, Vector* b) {
+        if (a && b) {
+            return a->inner_product(*b);
+        }
+        return 0.0;
+    }
+}
+
+extern "C" {
+    float half_vector_inner_product(HalfVector* a, HalfVector* b) {
+        if (a && b) {
+            return a->inner_product(*b);
+        }
+        return 0.0;
+    }
+}
+
+extern "C" {
+    float sparse_vector_inner_product(SparseVector* a, SparseVector* b) {
+        if (a && b) {
+            return a->inner_product(*b);
+        }
+        return 0.0;
+    }
+}
+
+
+

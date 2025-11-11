@@ -22,6 +22,9 @@
 #include "utils/numeric.h"
 #include "vector.h"
 
+extern float vector_inner_product(Vector* a, Vector* b);
+
+
 #if PG_VERSION_NUM >= 160000
 #include "varatt.h"
 #endif
@@ -593,17 +596,7 @@ vector_l2_squared_distance(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8((double) VectorL2SquaredDistance(a->dim, a->x, b->x));
 }
 
-VECTOR_TARGET_CLONES static float
-VectorInnerProduct(int dim, float *ax, float *bx)
-{
-	float		distance = 0.0;
 
-	/* Auto-vectorized */
-	for (int i = 0; i < dim; i++)
-		distance += ax[i] * bx[i];
-
-	return distance;
-}
 
 /*
  * Get the inner product of two vectors
@@ -617,7 +610,7 @@ inner_product(PG_FUNCTION_ARGS)
 
 	CheckDims(a, b);
 
-	PG_RETURN_FLOAT8((double) VectorInnerProduct(a->dim, a->x, b->x));
+	PG_RETURN_FLOAT8((double) vector_inner_product(a, b));
 }
 
 /*
@@ -632,7 +625,7 @@ vector_negative_inner_product(PG_FUNCTION_ARGS)
 
 	CheckDims(a, b);
 
-	PG_RETURN_FLOAT8((double) -VectorInnerProduct(a->dim, a->x, b->x));
+	PG_RETURN_FLOAT8((double) -vector_inner_product(a, b));
 }
 
 VECTOR_TARGET_CLONES static double
@@ -699,7 +692,7 @@ vector_spherical_distance(PG_FUNCTION_ARGS)
 
 	CheckDims(a, b);
 
-	distance = (double) VectorInnerProduct(a->dim, a->x, b->x);
+	distance = (double) vector_inner_product(a, b);
 
 	/* Prevent NaN with acos with loss of precision */
 	if (distance > 1)

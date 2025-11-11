@@ -28,3 +28,26 @@ const float* SparseVector::values() const {
 size_t SparseVector::size() const {
     return offsetof(SparseVector, indices) + (nnz * sizeof(int32_t)) + (nnz * sizeof(float));
 }
+
+void SparseVector::print(const char* msg) {
+    // Implementation requires iterating through sparse data
+}
+
+float SparseVector::inner_product(const SparseVector& other) const {
+    float result = 0.0f;
+    int i = 0;
+    int j = 0;
+    while (i < nnz && j < other.nnz) {
+        if (indices[i] == other.indices[j]) {
+            result += values()[i] * other.values()[j];
+            i++;
+            j++;
+        } else if (indices[i] < other.indices[j]) {
+            i++;
+        } else {
+            j++;
+        }
+    }
+    return result;
+}
+

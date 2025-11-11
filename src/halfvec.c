@@ -19,6 +19,9 @@
 #include "utils/numeric.h"
 #include "vector.h"
 
+extern float half_vector_inner_product(HalfVector* a, HalfVector* b);
+
+
 #define STATE_DIMS(x) (ARR_DIMS(x)[0] - 1)
 #define CreateStateDatums(dim) palloc(sizeof(Datum) * (dim + 1))
 
@@ -581,7 +584,7 @@ halfvec_inner_product(PG_FUNCTION_ARGS)
 
 	CheckDims(a, b);
 
-	PG_RETURN_FLOAT8((double) HalfvecInnerProduct(a->dim, a->x, b->x));
+	PG_RETURN_FLOAT8((double) half_vector_inner_product(a, b));
 }
 
 /*
@@ -596,7 +599,7 @@ halfvec_negative_inner_product(PG_FUNCTION_ARGS)
 
 	CheckDims(a, b);
 
-	PG_RETURN_FLOAT8((double) -HalfvecInnerProduct(a->dim, a->x, b->x));
+	PG_RETURN_FLOAT8((double) -half_vector_inner_product(a, b));
 }
 
 /*
@@ -644,7 +647,7 @@ halfvec_spherical_distance(PG_FUNCTION_ARGS)
 
 	CheckDims(a, b);
 
-	distance = (double) HalfvecInnerProduct(a->dim, a->x, b->x);
+	distance = (double) half_vector_inner_product(a, b);
 
 	/* Prevent NaN with acos with loss of precision */
 	if (distance > 1)

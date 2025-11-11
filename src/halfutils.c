@@ -20,7 +20,7 @@
 #endif
 
 float		(*HalfvecL2SquaredDistance) (int dim, half * ax, half * bx);
-float		(*HalfvecInnerProduct) (int dim, half * ax, half * bx);
+
 double		(*HalfvecCosineSimilarity) (int dim, half * ax, half * bx);
 float		(*HalfvecL1Distance) (int dim, half * ax, half * bx);
 
@@ -76,48 +76,7 @@ HalfvecL2SquaredDistanceF16c(int dim, half * ax, half * bx)
 }
 #endif
 
-static float
-HalfvecInnerProductDefault(int dim, half * ax, half * bx)
-{
-	float		distance = 0.0;
 
-	/* Auto-vectorized */
-	for (int i = 0; i < dim; i++)
-		distance += HalfToFloat4(ax[i]) * HalfToFloat4(bx[i]);
-
-	return distance;
-}
-
-#ifdef HALFVEC_DISPATCH
-TARGET_F16C static float
-HalfvecInnerProductF16c(int dim, half * ax, half * bx)
-{
-	float		distance;
-	int			i;
-	float		s[8];
-	int			count = (dim / 8) * 8;
-	__m256		dist = _mm256_setzero_ps();
-
-	for (i = 0; i < count; i += 8)
-	{
-		__m128i		axi = _mm_loadu_si128((__m128i *) (ax + i));
-		__m128i		bxi = _mm_loadu_si128((__m128i *) (bx + i));
-		__m256		axs = _mm256_cvtph_ps(axi);
-		__m256		bxs = _mm256_cvtph_ps(bxi);
-
-		dist = _mm256_fmadd_ps(axs, bxs, dist);
-	}
-
-	_mm256_storeu_ps(s, dist);
-
-	distance = s[0] + s[1] + s[2] + s[3] + s[4] + s[5] + s[6] + s[7];
-
-	for (; i < dim; i++)
-		distance += HalfToFloat4(ax[i]) * HalfToFloat4(bx[i]);
-
-	return distance;
-}
-#endif
 
 static double
 HalfvecCosineSimilarityDefault(int dim, half * ax, half * bx)
@@ -281,7 +240,7 @@ HalfvecInit(void)
 	 * performance
 	 */
 	HalfvecL2SquaredDistance = HalfvecL2SquaredDistanceDefault;
-	HalfvecInnerProduct = HalfvecInnerProductDefault;
+	
 	HalfvecCosineSimilarity = HalfvecCosineSimilarityDefault;
 	HalfvecL1Distance = HalfvecL1DistanceDefault;
 
@@ -289,7 +248,7 @@ HalfvecInit(void)
 	if (SupportsCpuFeature(CPU_FEATURE_AVX | CPU_FEATURE_F16C | CPU_FEATURE_FMA))
 	{
 		HalfvecL2SquaredDistance = HalfvecL2SquaredDistanceF16c;
-		HalfvecInnerProduct = HalfvecInnerProductF16c;
+		
 		HalfvecCosineSimilarity = HalfvecCosineSimilarityF16c;
 		/* Does not require FMA, but keep logic simple */
 		HalfvecL1Distance = HalfvecL1DistanceF16c;

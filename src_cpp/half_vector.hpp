@@ -20,6 +20,8 @@ public:
     half x[1];
 
     static HalfVector* init(int dim);
+    void print(const char* msg);
+    float inner_product(const HalfVector& other) const;
 };
 
 #endif // HALF_VECTOR_HPP
