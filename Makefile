@@ -5,7 +5,30 @@ MODULE_big = vector
 DATA = $(wildcard sql/*--*--*.sql)
 DATA_built = sql/$(EXTENSION)--$(EXTVERSION).sql
 OBJS = src/bitutils.o src/bitvec.o src/halfutils.o src/halfvec.o src/hnsw.o src/hnswbuild.o src/hnswinsert.o src/hnswscan.o src/hnswutils.o src/hnswvacuum.o src/ivfbuild.o src/ivfflat.o src/ivfinsert.o src/ivfkmeans.o src/ivfscan.o src/ivfutils.o src/ivfvacuum.o src/sparsevec.o src/vector.o
+
+# C++ compiler
+CXX = g++
+
+# C++ source files
+CPP_FILES = $(wildcard src_cpp/*.cpp)
+
+# Object files from C++ sources
+CPP_OBJS = $(patsubst src_cpp/%.cpp,src_cpp/%.o,$(CPP_FILES))
+
+# Append C++ objects to the main OBJS list
+OBJS += $(CPP_OBJS)
+
+# Rule to compile C++ files
+src_cpp/%.o: src_cpp/%.cpp
+	$(CXX) $(PG_CPPFLAGS) $(CPPFLAGS) -fPIC -I$(srcdir) -I. -c -o $@ $<
+
+# Modify the linking step to use CXX if there are C++ objects
+vector.so: $(OBJS)
+	$(CXX) -shared -o $@ $(OBJS) $(LDFLAGS)
+
+# Add C++ headers to the HEADERS list
 HEADERS = src/halfvec.h src/sparsevec.h src/vector.h
+HEADERS += $(wildcard src_cpp/*.hpp)
 
 TESTS = $(wildcard test/sql/*.sql)
 REGRESS = $(patsubst test/sql/%.sql,%,$(TESTS))

@@ -1016,29 +1016,7 @@ subvector(PG_FUNCTION_ARGS)
 /*
  * Internal helper to compare vectors
  */
-int
-vector_cmp_internal(Vector * a, Vector * b)
-{
-	int			dim = Min(a->dim, b->dim);
 
-	/* Check values before dimensions to be consistent with Postgres arrays */
-	for (int i = 0; i < dim; i++)
-	{
-		if (a->x[i] < b->x[i])
-			return -1;
-
-		if (a->x[i] > b->x[i])
-			return 1;
-	}
-
-	if (a->dim < b->dim)
-		return -1;
-
-	if (a->dim > b->dim)
-		return 1;
-
-	return 0;
-}
 
 /*
  * Less than
